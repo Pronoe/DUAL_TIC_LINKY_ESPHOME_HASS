@@ -1,0 +1,151 @@
+# Configuration file for an ESP module connected to two separate Linky power meters (smart power meter deployed in France)
+# This file is used by esphome tool to build the firmware of the module
+
+esphome:
+  name: linky
+# slow pwm definition used for LED blinking  
+  on_boot:
+    priority: -100
+    then:
+      - output.turn_on:
+          my_slow_pwm  
+      - output.set_level:
+          id: my_slow_pwm
+          level: "50%"
+
+# board definition
+# https://esphome.io/components/esp8266.html
+# esp8266:
+#   board: d1_mini
+
+# https://esphome.io/components/esp32.html
+esp32:
+  board: esp32doit-devkit-v1
+  variant: esp32
+
+# For blinking the internal green LED on D2
+output:
+    platform: slow_pwm
+    pin: GPIO2
+    id: my_slow_pwm
+    period: 1000ms
+
+# WiFi Component: https://esphome.io/components/wifi.html
+wifi:
+  ssid: !secret esphome_wifi_ssid
+  password: !secret esphome_wifi_password
+  # manual_ip:
+  #   static_ip: 192.168.125.84
+  #   gateway: 192.168.0.254
+  #   subnet: 255.255.255.0
+  #    dns1: 192.168.125.1
+  ap:
+    ssid: ESP_linky
+    password: !secret esphome_wifi_password
+
+# OTA Update Component: https://esphome.io/components/ota.html
+ota:
+  password: !secret esphome_ota_password
+
+# Logger Component: https://esphome.io/components/logger.html
+logger:
+  baud_rate: 0   # disable logging via UART, help to avoid numerous crash with ESP_LOGD
+  # UART must be activated when you need to view boot messages before WiFi communication is established
+  hardware_uart : UART1
+  level: info
+#  esp8266_store_log_strings_in_flash: false
+
+# Native API Component: https://esphome.io/components/api.html
+api:
+  encryption:
+    key: EOl+kJJ/RoYA0+qfbLxjsnym3Y6qAAempIwh7Vb04QI=
+
+# Captive Portal: https://esphome.io/components/captive_portal.html
+captive_portal:
+
+# Web Server: https://esphome.io/components/web_server.html
+web_server:
+  local: false # true
+  port: 80
+  auth:
+    username: !secret esphome_web_server_username
+    password: !secret esphome_web_server_password
+
+# Time: https://esphome.io/components/time.html
+time:
+  - platform: homeassistant
+    timezone: "Europe/Paris"
+    id: homeassistant_time
+
+# Configuration data for temperature sensor D18B20
+dallas:
+  - pin: GPIO14
+    update_interval: 60s
+
+# Status Binary Sensor: https://esphome.io/components/binary_sensor/status.html
+binary_sensor:
+  - platform: status
+    name: "Linky Status"
+
+# Restart Button: https://esphome.io/components/button/restart.html
+button:
+  - platform: restart
+    name: "Linky Restart"
+
+packages:
+  linky1: !include
+    file: linky_TIC_historic.yaml      # comment this line if the counter is in standard mode
+    # file: linky_TIC_standard.yaml     # uncomment this line if is in standard mode
+    vars:
+      bus_id: bus1
+      uart_pin: GPIO16
+      # use default UART2
+      update_interval: 15s
+
+  linky2: !include
+    # file: linky_TIC_historic.yaml      # comment this line if the counter is in standard mode
+    file: linky_TIC_standard.yaml     # uncomment this line if is in standard mode
+    vars:
+      bus_id: bus2
+      uart_pin: GPIO35  # this is a GPIO input pin only to avoid any risk of conflict
+      update_interval: 15s
+
+# https://esphome.io/components/sensor/index.html
+sensor:
+  # temperature sensor DS18B20 n°1
+  - platform: dallas
+    address: 0x3a00000d859d0128
+    name: "Temperature Dallas #1"
+    resolution: 11
+    # other valid values
+    # 12 => sensor resolution 12 bits - 0.0625°C - 750 ms  conversion time
+    # 11 => sensor resolution 11 bits - 0.125°C - 375 ms conversion time
+    # 10 => sensor resolution 10 bits - 0.25°C - 187.5 ms conversion time
+    # 9 => sensor resolution 9 bits - 0.5°C - 93.75 ms conversion time
+  # WiFi
+  - platform: wifi_signal
+    name: "Linky WiFi Signal"
+    unit_of_measurement: dB
+    device_class: signal_strength
+    accuracy_decimals: 0
+    update_interval: 60s
+  # Uptime
+  - platform: uptime
+    name: "Linky Uptime"
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: 60s
+  
+# https://esphome.io/components/text_sensor/index.html
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: Linky IP Address
+    mac_address:
+      name: Linky Wifi Mac Address
+    ssid:
+      name: Linky Wifi SSID
+    bssid:
+      name: Linky Wifi BSSID
+  

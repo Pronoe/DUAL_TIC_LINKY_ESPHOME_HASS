@@ -1,0 +1,6 @@
+# Gitignore settings for Mechanical Parts
+interface_opto/
+*.x3g
+*.FCStd1
+*.bak.*
+*.inx

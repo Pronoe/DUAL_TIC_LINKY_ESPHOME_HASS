@@ -1,0 +1,288 @@
+views:
+  - title: Home
+    type: custom:layout-card
+    layout_type: custom:grid-layout
+    layout:
+      grid-template-columns: 20% 1fr
+      grid-template-areas: |
+        "left right"
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.target_pac_water_temp
+            name: Température cible eau PAC
+          - entity: sensor.filtered_temp_ext
+            name: Température extérieure filtrée
+            icon: mdi:thermometer
+          - entity: sensor.filtered_linky_rdc_va
+            name: Puissance apparente moyenne
+          - entity: sensor.temperature_dallas_1
+            name: Température départ eau PAC
+      - type: custom:apexcharts-card
+        apex_config:
+          chart:
+            height: 500px
+            width: 100%
+          grid:
+            show: true
+            borderColor: '#90A4AE'
+            strokeDashArray: 0
+            position: back
+            xaxis:
+              lines:
+                show: true
+            yaxis:
+              lines:
+                show: true
+            row:
+              colors: undefined
+              opacity: 0
+            column:
+              colors: undefined
+              opacity: 0
+            padding:
+              top: 0
+              right: 0
+              bottom: 0
+              left: 0
+        graph_span: 1d
+        yaxis:
+          - id: temp
+            decimals: 0
+            min: 0
+            max: ~50
+            apex_config:
+              tickAmount: 5
+          - id: VA
+            opposite: true
+            decimals: 0
+            min: 0
+            max: ~3000
+            apex_config:
+              tickAmount: 6
+          - id: temp_ext
+            opposite: false
+            decimals: 0
+            min: ~0
+            max: ~30
+            apex_config:
+              tickAmount: 6
+              labels:
+                style:
+                  colors: blue
+                  fontSize: 12px
+              title:
+                text: 19 - temp. ext.°C
+                rotate: -90
+                offsetX: 0
+                offsetY: 0
+                style:
+                  color: blue
+                  fontSize: 12px
+                  fontFamily: Helvetica, Arial, sans-serif
+                  fontWeight: 600
+                  cssClass: apexcharts-yaxis-title
+          - id: kWh
+            opposite: true
+            decimals: 1
+            min: ~-1.5
+            max: ~1.5
+            apex_config:
+              tickAmount: 6
+        all_series_config:
+          stroke_width: 2
+          curve: straight
+        header:
+          show: true
+          title: Surveillance PAC
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.netatmo_unite_exterieure_temperature
+            transform: return 19-x;
+            yaxis_id: temp_ext
+            type: line
+            color: blue
+            name: Ecart temp. extérieure
+          - entity: sensor.temperature_dallas_1
+            yaxis_id: temp
+            type: line
+            stroke_width: 1
+            color: red
+            name: Température eau départ PAC - mesure
+            group_by:
+              func: avg
+              duration: 1min
+          - entity: sensor.target_pac_water_temp
+            yaxis_id: temp
+            type: line
+            curve: stepline
+            color: orange
+            name: Température eau départ PAC - théorique
+          - entity: sensor.bus1_linky_puissance_apparente
+            yaxis_id: VA
+            type: line
+            color: green
+            name: Puissance PAC (VA)
+            group_by:
+              func: avg
+              duration: 60min
+          - entity: sensor.ecart_conso_pac
+            yaxis_id: kWh
+            type: line
+            color: cyan
+            name: Ecart conso PAC (kWh)
+            group_by:
+              func: avg
+              duration: 1min
+      - type: entities
+        entities:
+          - entity: sensor.target_pac_water_temp
+            name: Température cible eau PAC
+          - entity: sensor.filtered_temp_ext
+            name: Température extérieure filtrée
+            icon: mdi:thermometer
+          - entity: sensor.filtered_linky_rdc_va
+            name: Puissance apparente moyenne
+          - entity: sensor.temperature_dallas_1
+            name: Température départ eau PAC
+      - apex_config:
+          chart:
+            height: 500px
+          grid:
+            show: true
+            borderColor: '#90A4AE'
+            strokeDashArray: 0
+            position: back
+            xaxis:
+              lines:
+                show: true
+            yaxis:
+              lines:
+                show: true
+            row:
+              colors: undefined
+              opacity: 0
+            column:
+              colors: undefined
+              opacity: 0
+            padding:
+              top: 0
+              right: 0
+              bottom: 0
+              left: 0
+        type: custom:apexcharts-card
+        graph_span: 3h
+        yaxis:
+          - id: temp
+            decimals: 0
+            min: 0
+            max: ~50
+            apex_config:
+              tickAmount: 5
+          - id: VA
+            opposite: true
+            decimals: 0
+            min: 0
+            max: ~3000
+            apex_config:
+              tickAmount: 3
+          - id: temp_ext
+            opposite: false
+            decimals: 0
+            min: ~0
+            max: ~30
+            apex_config:
+              tickAmount: 3
+              labels:
+                style:
+                  colors: blue
+                  fontSize: 12px
+              title:
+                text: 19 - temp. ext.°C
+                rotate: -90
+                offsetX: 0
+                offsetY: 0
+                style:
+                  color: blue
+                  fontSize: 12px
+                  fontFamily: Helvetica, Arial, sans-serif
+                  fontWeight: 600
+                  cssClass: apexcharts-yaxis-title
+          - id: kWh
+            opposite: true
+            decimals: 1
+            min: ~-1
+            max: ~1
+            apex_config:
+              tickAmount: 4
+              labels:
+                style:
+                  colors: cyan
+                  fontSize: 12px
+              title:
+                text: écart modèle kVA
+                rotate: -90
+                offsetX: 0
+                offsetY: 0
+                style:
+                  color: cyan
+                  fontSize: 12px
+                  fontFamily: Helvetica, Arial, sans-serif
+                  fontWeight: 600
+                  cssClass: apexcharts-yaxis-title
+        all_series_config:
+          stroke_width: 2
+        header:
+          show: true
+          title: Surveillance PAC - zoom
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.netatmo_unite_exterieure_temperature
+            transform: return 19-x;
+            yaxis_id: temp_ext
+            type: line
+            color: blue
+            name: Ecart temp. extérieure
+          - entity: sensor.temperature_dallas_1
+            yaxis_id: temp
+            type: line
+            stroke_width: 1
+            color: red
+            name: Température eau départ PAC - mesure
+            group_by:
+              func: avg
+              duration: 10s
+          - entity: sensor.target_pac_water_temp
+            yaxis_id: temp
+            type: line
+            curve: stepline
+            color: orange
+            name: Température eau départ PAC - théorique
+          - entity: sensor.bus1_linky_puissance_apparente
+            yaxis_id: VA
+            type: line
+            color: green
+            name: Puissance PAC moyenne (VA)
+            group_by:
+              func: avg
+              duration: 60min
+          - entity: sensor.bus1_linky_puissance_apparente
+            yaxis_id: VA
+            type: line
+            color: green
+            stroke_width: 1
+            name: Puissance PAC (VA)
+            group_by:
+              func: avg
+              duration: 1min
+          - entity: sensor.ecart_conso_pac
+            yaxis_id: kWh
+            type: line
+            curve: straight
+            color: cyan
+            name: Ecart conso PAC (kWh)
+            group_by:
+              func: avg
+              duration: 10s

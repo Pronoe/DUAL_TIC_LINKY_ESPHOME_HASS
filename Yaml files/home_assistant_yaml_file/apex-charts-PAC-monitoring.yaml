@@ -1,0 +1,81 @@
+# https://github.com/RomRider/apexcharts-card
+# https://apexcharts.com/docs/options
+
+type: custom:apexcharts-card
+apex_config:
+  chart:
+    height: 500px
+graph_span: 1d
+yaxis:
+  - id: temp
+    decimals: 0
+    min: 0
+    max: ~50
+    apex_config:
+      tickAmount: 4
+  - id: VA
+    opposite: true
+    decimals: 0
+    min: 0
+    max: ~3000
+    apex_config:
+      tickAmount: 4
+  - id: temp_ext
+    opposite: false
+    decimals: 0
+    min: ~0
+    max: ~30
+    apex_config:
+      tickAmount: 4
+  - id: kWh
+    opposite: true
+    decimals: 0
+    min: ~-5
+    max: ~5
+    apex_config:
+      tickAmount: 4
+all_series_config:
+  stroke_width: 2
+  curve: smooth
+header:
+  show: true
+  title: Surveillance PAC
+  show_states: true
+  colorize_states: true
+series:
+  - entity: sensor.netatmo_unite_exterieure_temperature
+    transform: return 19-x;
+    yaxis_id: temp_ext
+    type: line
+    color: blue
+    name: Ecart temp. extérieure
+  - entity: sensor.temperature_dallas_1
+    yaxis_id: temp
+    type: line
+    stroke_width: 1
+    color: red
+    name: Température eau départ PAC - mesure
+    group_by:
+      func: avg
+      duration: 1min
+  - entity: sensor.target_pac_water_temp
+    yaxis_id: temp
+    type: line
+    color: orange
+    name: Température eau départ PAC - théorique
+  - entity: sensor.bus1_linky_puissance_apparente
+    yaxis_id: VA
+    type: line
+    color: green
+    name: Puissance PAC (VA)
+    group_by:
+      func: avg
+      duration: 60min
+  - entity: sensor.ecart_conso_pac
+    yaxis_id: kWh
+    type: line
+    color: cyan
+    name: Ecart conso PAC (kWh)
+    group_by:
+      func: avg
+      duration: 1min
